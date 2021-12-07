@@ -50,7 +50,7 @@ router.get('/friends', verifyMiddleWare, async (req, res, next) => {
   const { id } = req.decoded;
 
   if (id) {
-    const friends = (await query(`SELECT id, name FROM users where user_id in (SELECT to_id FROM friends WHERE from_id in (SELECT user_id FROM users WHERE id = '${id}'))`));
+    const friends = (await query(`SELECT id, name FROM users where user_id in (SELECT to_id FROM friends WHERE from_id in (SELECT user_id FROM users WHERE id = '${id}')) ORDER BY name ASC;`));
 
     res.json({
       success: true,
