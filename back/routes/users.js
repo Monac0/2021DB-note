@@ -332,5 +332,4 @@ router.get('/usersInLocation', verifyMiddleWare, async (req, res, next) => {
   }
 });
 
-
 module.exports = router;
