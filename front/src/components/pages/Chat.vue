@@ -47,7 +47,7 @@ import http from '../../services/http';
 import { ElNotification } from 'element-plus';
 
 export default {
-  name: "Chat", 
+  name: "Chat",
   data() {
     return {
       chatDatas: [],
