@@ -8,9 +8,13 @@
         <el-card style="height: 100%;" :body-style="{ height: 'calc(100% - 58px)' }">
           <template #header >
             <div class="card-header">
-              <span>{{ $route.params.userRole }}</span>
-              <span>{{ $route.params.userName }}</span>
-              <el-button
+            <el-row>
+              <el-col :span="18">
+                <span>role  </span>
+                <span>name  </span>               
+              </el-col>
+              <el-col :span="6">
+                <el-button
                 v-if="!this.friends.find(el => el.id === $route.params.userId)"
                 size="mini"
                 @click="addFriend($route.params.userId)"
@@ -26,6 +30,8 @@
                 >
                 remove
               </el-button>
+              </el-col>
+            </el-row>
             </div>
           </template>
           <el-scrollbar class="chat_messages" ref="scrollbar" view-style="height: 100%;">
@@ -33,7 +39,7 @@
               <div v-for="(chatData, index) in chatDatas" :key="index" :class="`${chatData.type} chat_line`">
                 <p v-if="chatData.type === 'chat_right'" :class="`${chatData.type}_time`">{{ chatData.is_read ? '읽음' : '읽지 않음' }}, {{ new Date(chatData.created_at).toLocaleTimeString() }}</p>
                 <p :class="`${chatData.type}_inner chat_inner`">
-                  {{ chatData.is_rendezvous }}
+                  {{ chatData.message }}
                 </p>
                 <p v-if="chatData.type === 'chat_left'" :class="`${chatData.type}_time`">{{ new Date(chatData.created_at).toLocaleTimeString() }}, {{ chatData.is_read ? '읽음' : '읽지 않음' }}</p>
               </div>
@@ -49,7 +55,7 @@
             </el-col>
             <el-col
               :span="4">
-              <el-button type="info" class="send_button" @click="sendMessage(1, 3)">send</el-button>
+              <el-button type="info" class="send_button" @click="sendMessage">send</el-button>
             </el-col>
           </el-row>
         </el-card>
