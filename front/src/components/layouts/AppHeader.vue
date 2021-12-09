@@ -6,7 +6,8 @@
       </el-col>
 			<el-col :span="16">
         <div v-if="name !== ''">
-          <el-link el-link :underline="false" @click="$router.push({ name: 'Online' })">Online</el-link>
+          <el-link el-link :underline="false" @click="$router.push({ name: 'Search' })">Search</el-link>
+          <el-link el-link :underline="false" @click="$router.push({ name: 'Around' })">Around</el-link>
           <el-link el-link :underline="false" @click="$router.push({ name: 'ChatList' })">Chat List</el-link>
           <el-link el-link :underline="false" @click="$router.push({ name: 'Friend' })">Friend List</el-link>
         </div>
@@ -54,11 +55,23 @@ export default {
         this.$socket.disconnect();
 
 				this.updateUser({
-					id: '',
-					name: '',
+          id: '',
+          name: '',
+          active: '',
           current_status: '',
-          location: '',
-          role: ''
+          role: '',
+          building: '',
+          floor: '',
+          ssid: '',
+          longitude: '',
+          latitude: '',
+          ip: '',
+          friends: [],
+          searchs: [],
+          arounds: [],
+          select_building: '',
+          select_floor: '',
+          select_ssid: ''
 				});
 				
 				this.$router.push({

@@ -59,7 +59,7 @@ router.get('/friends', verifyMiddleWare, async (req, res, next) => {
   const { id } = req.decoded;
 
   if (id) {
-    const friends = (await query(`SELECT id, name FROM users where id in (SELECT to_id FROM friends WHERE from_id in (SELECT id FROM users WHERE id = '${id}')) ORDER BY name ASC;`));
+    const friends = (await query(`SELECT id, name, role, current_status FROM users where id in (SELECT to_id FROM friends WHERE from_id in (SELECT id FROM users WHERE id = '${id}')) ORDER BY name ASC;`));
 
     res.json({
       success: true,
@@ -201,7 +201,7 @@ router.post('/signUp', async (req, res, next) => {
 //req.body에 id 필요: 알고자 하는 상태메시지를 가진 유저의 id
 //성공시, success: true, current_status
 //살패시, success: false, errorMessage
-router.get('/statusMessage', verifyMiddleWare, async (req, res, next) => {
+router.get('/editCurrentStatus', verifyMiddleWare, async (req, res, next) => {
   const { id } = req.body;
 
   const queryResult = await query(`SELECT * from users where id = '${id}';`);
@@ -227,15 +227,13 @@ router.get('/statusMessage', verifyMiddleWare, async (req, res, next) => {
 //req.body에 idOrName 필요: 검색하고자 하는 id 혹은 이름
 //성공시, success: true, queryResult
 //실패시, success: false, errorMessage
-router.get('/idOrName', verifyMiddleWare, async (req, res, next) => {
+router.post('/idOrName', verifyMiddleWare, async (req, res, next) => {
   const { idOrName } = req.body;
-
-  const queryResult = await query(`SELECT name, current_status from users where id = '${idOrName}' or name = '${idOrName}';`);
-
-  if (queryResult.length > 0) {
+  const searchs = await query(`SELECT id, name, role, current_status from users where id like '%${idOrName}%' or name like '%${idOrName}%';`);
+  if (searchs.length > 0) {
     res.json({
       success: true,
-      queryResult
+      searchs
     });
   } else {
     res.json({
@@ -253,52 +251,56 @@ router.get('/idOrName', verifyMiddleWare, async (req, res, next) => {
 //실패시 success: false, errorMessage: 'Incorrect id'
 router.post('/editCurrentStatus', verifyMiddleWare, async (req, res, next) => {
   const { id } = req.decoded;
-  //location 수정 필요
   const { current_status } = req.body;
+  console.log(current_status);
 
-  const queryResult = await query(`SELECT * from users where id = '${id}';`);
+  const status_regex = /^.{0,20}$/; // 모든 글자 20자 이하
 
-  if (queryResult.length > 0) {
-    await query(`UPDATE users SET current_status = '${current_status}' WHERE id = '${id}';`);
-
-      res.json({
-        success: true
-      });
-  } else {
+  console.log(status_regex.test(current_status));
+  if (!status_regex.test(current_status)) {
     res.json({
       success: false,
-      errorMessage: 'Incorrect id'
+      errorMessage: '글자수가 너무 많습니다'
     });
-  }
+  } else {
+    const queryResult = await query(`SELECT * from users where id = '${id}';`);
+    if (queryResult.length > 0) {
+      await query(`UPDATE users SET current_status = '${current_status}' WHERE id = '${id}';`);
+      console.log(current_status);
+        res.json({
+          success: true
+        });
+    } else {
+      res.json({
+        success: false,
+        errorMessage: 'Incorrect id'
+      });
+    }
+  }  
 });
-
 //위치 변경 api
 //req.body에 ??? 필요:  내용
 //성공시 success: true
 //실패시 success: false, errorMessage: 'Incorrect id'
 router.post('/updateLocation', verifyMiddleWare, async (req, res, next) => {
-  const { id } = req.decoded;
-  //location 수정 필요
-  const { building, floor, ssid } = req.body;
-
-  const upload = multer({
-    dest: '../upload'
-  })
-  const queryResult = await query(`SELECT * from users where id = '${id}';`);
-
-  if (queryResult.length > 0) {
-    await query(`UPDATE location SET building = '${building}' WHERE id = '${id}';`);
-    await query(`UPDATE location SET floor = '${floor}' WHERE id = '${id}';`);
-    await query(`UPDATE location SET ssid = '${ssid}' WHERE id = '${id}';`);
-      res.json({
-        success: true
-      });
-  } else {
-    res.json({
-      success: false,
-      errorMessage: 'Incorrect id'
-    });
+  console.log("HI");
+  const { content, building, longitude, latitude, floor, SSID, IP } = req.body;
+  const id = req.decoded;
+  console.log("HI");
+  const findLocation = await query(`SELECT * FROM location WHERE building = '${building}' and floor = '${floor}' and ssid = '${SSID}'`);
+  console.log("HI");
+  if (findLocation.length == 0) {
+    await query(`INSERT INTO location(building, floor, ssid, longitude, latitude, ip) 
+    VALUES('${building}', '${floor}', '${SSID}', '${longitude}', '${latitude}', '${IP}')`);
   }
+  console.log("HI");
+  await query(`UPDATE users SET building = '${building}' WHERE id = '${id}';`);
+  await query(`UPDATE users SET floor = '${floor}' WHERE id = '${id}';`);
+  await query(`UPDATE users SET ssid = '${SSID}' WHERE id = '${id}';`);
+  console.log("HI");  
+  res.json({
+    success: true,
+  });
 });
 
 
@@ -329,26 +331,7 @@ router.post('/deleteAccount', verifyMiddleWare, async (req, res, next) => {
 
 // 내 주변 관련 api
 
-//특정 장소에 있는 유저들 api
-//req.body에 theLocation 필요: 유저들을 찾기 원하는 특정 장소
-//성공시, success: true, usersInLocation
-//실패시, success: false, errorMessage
-router.get('/usersInLocation', verifyMiddleWare, async (req, res, next) => {
-  const { theLocation } = req.body;
-
-  const usersInLocation = await query(`SELECT name, current_status, role from users where location = '${theLocation}';`);
-
-  if (usersInLocation.length > 0) {
-    res.json({
-      success: true,
-      usersInLocation
-    });
-  } else {
-    res.json({
-      success: false,
-      errorMessage: 'No users in the location'
-    });
-  }
-});
+//get('/arounds', ...) SELECT building, floor, ssid FROM location where 500m 이내
+//get('/aroundsub', ...) SELECT id, name, role, current_status FROM users where ssid 일치
 
 module.exports = router;

@@ -12,7 +12,13 @@ export default {
     longitude: '',
     latitude: '',
     ip: '',
-    friends: []
+    friends: [],
+    searchs: [],
+    arounds: [],
+    aroundsub: [],
+    select_building: '',
+    select_floor: '',
+    select_ssid: ''
   },
   mutations: {
     //sign_in
@@ -44,5 +50,19 @@ export default {
     updateFriends(state, { friends }) {
       state.friends = [...friends];
     },
+    updateSearchs(state, { searchs }) {
+      state.searchs = [...searchs];
+    },
+    updateArounds(state, { arounds }) {
+      state.arounds = [...arounds];
+    },
+    updateAroundsub(state, { aroundsub }) {
+      state.aroundsub = [...aroundsub];
+    },
+    updateAroundsub(state, { building, floor, ssid }) {
+      state.select_building = building;
+      state.select_floor = floor;
+      state.select_ssid = ssid;
+    }
   },
 };
