@@ -55,7 +55,7 @@
             </el-col>
             <el-col
               :span="4">
-              <el-button type="info" class="send_button" @click="sendMessage">send</el-button>
+              <el-button type="info" class="send_button" @click="sendMessage(0, 0)">send</el-button>
             </el-col>
           </el-row>
         </el-card>
